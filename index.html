@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Treino de Fala</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #f39c12;
+            --bg: #f8fbff;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), #63b3ed);
+            color: white;
+            width: 100%;
+            padding: 60px 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-bottom-left-radius: 50px;
+            border-bottom-right-radius: 50px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 90%;
+            margin: -40px auto 40px auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 2px solid transparent;
+        }
+
+        .card:hover:not(.locked) {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 45px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+
+        .card .icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .card h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .card p {
+            font-size: 0.95rem;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: background 0.3s;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: #357abd;
+        }
+
+        .card.locked {
+            opacity: 0.7;
+            background: #f1f1f1;
+            cursor: not-allowed;
+        }
+
+        .card.locked .btn {
+            background-color: #bdc3c7;
+            pointer-events: none;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            font-size: 0.9rem;
+            color: #95a5a6;
+        }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.8rem; }
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Portal de Treino Fonológico</h1>
+        <p>Escolhe a tua missão e começa a praticar!</p>
+    </header>
+
+    <div class="container">
+        <!-- Card do Treino L -->
+        <div class="card">
+            <div class="icon">🦁</div>
+            <h2>Som L</h2>
+            <p>Pratica o som "L" no início, meio e fim das palavras com o microfone.</p>
+            <a href="treino_l.html" class="btn">Jogar Agora</a>
+        </div>
+
+        <!-- Placeholder para Som R -->
+        <div class="card locked">
+            <div class="icon">🚀</div>
+            <h2>Som R</h2>
+            <p>Em breve: Missão especial para o treino do som "R" forte e brando.</p>
+            <a href="#" class="btn">Bloqueado</a>
+        </div>
+
+        <!-- Placeholder para Som S -->
+        <div class="card locked">
+            <div class="icon">🐍</div>
+            <h2>Som S</h2>
+            <p>Em breve: Missão para praticar os sons sibilantes "S" e "Z".</p>
+            <a href="#" class="btn">Bloqueado</a>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2025 Portal de Treinos Fonológicos - Desenvolvido para Apoio Terapêutico
+    </footer>
+
+</body>
+</html>
