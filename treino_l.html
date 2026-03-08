@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treino do Som L</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --success: #2ecc71;
+            --error: #e74c3c;
+            --warning: #f1c40f;
+            --bg: #f0f7ff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 40px;
+            padding: 30px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .btn-back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #f1f1f1;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #333;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-back:hover {
+            background: #e5e5e5;
+        }
+
+        .progress-container {
+            background: #eee;
+            border-radius: 20px;
+            height: 15px;
+            margin: 25px 0;
+            overflow: hidden;
+            border: 2px solid #eee;
+        }
+
+        #progress-bar {
+            background: linear-gradient(90deg, var(--success), #58d68d);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .emoji-display {
+            font-size: 100px;
+            margin: 20px 0;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+        }
+
+        .word-display {
+            font-size: 48px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--text);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+        
+        #feedback {
+            height: 60px;
+            font-weight: bold;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .circle-btn {
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 38px;
+            color: white;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-mic {
+            background: var(--primary);
+            box-shadow: 0 6px #2980b9;
+        }
+
+        .btn-mic:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px #2980b9;
+        }
+
+        .btn-audio {
+            background: var(--warning);
+            box-shadow: 0 6px #d4ac0d;
+        }
+
+        .btn-audio:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px #d4ac0d;
+        }
+
+        .listening {
+            animation: pulse 1s infinite;
+            background: var(--error) !important;
+            box-shadow: 0 6px #c0392b !important;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(231, 76, 60, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+
+        #victory-screen {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            border-radius: 40px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .star-score {
+            font-size: 1.2rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <a href="index.html" class="btn-back">⬅ Menu</a>
+        
+        <div id="game-ui">
+            <div id="counter" class="star-score">Estrelas: 0 / 40</div>
+            <div class="progress-container"><div id="progress-bar"></div></div>
+            
+            <div id="emoji" class="emoji-display">🎲</div>
+            <div id="word" class="word-display">...</div>
+            <div id="feedback">Clica no 🎤 e diz a palavra</div>
+
+            <div class="controls">
+                <button id="micBtn" class="circle-btn btn-mic" onclick="toggleMic()">🎤</button>
+                <button class="circle-btn btn-audio" onclick="playHelp()">🔊</button>
+            </div>
+        </div>
+
+        <div id="victory-screen">
+            <div style="font-size: 100px;">🏆</div>
+            <h2 style="color: var(--primary); font-size: 2rem;">INCRÍVEL!</h2>
+            <p style="color: #666; margin-bottom: 30px;">Conseguiste as 40 estrelas do L!</p>
+            <a href="index.html" style="background: var(--success); color: white; padding: 15px 40px; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 1.2rem; box-shadow: 0 5px #27ae60;">Voltar ao Menu</a>
+        </div>
+    </div>
+
+<script>
+    // Banco de palavras focado no fonema L (Início, Meio e Fim)
+    const rawWordBank = [
+        {w: "Leão", e: "🦁"}, {w: "Lua", e: "🌙"}, {w: "Lápis", e: "✏️"}, {w: "Laranja", e: "🍊"}, {w: "Lobo", e: "🐺"},
+        {w: "Limão", e: "🍋"}, {w: "Livro", e: "📚"}, {w: "Lata", e: "🥫"}, {w: "Leite", e: "🥛"}, {w: "Lupa", e: "🔍"},
+        {w: "Laço", e: "🎀"}, {w: "Lâmpada", e: "💡"}, {w: "Lagarto", e: "🦎"}, {w: "Lixo", e: "🗑️"}, {w: "Língua", e: "👅"},
+        {w: "Loja", e: "🏪"}, {w: "Lanche", e: "🥪"}, {w: "Lenha", e: "🪵"}, {w: "Lula", e: "🦑"}, {w: "Lama", e: "💩"},
+        {w: "Bolo", e: "🍰"}, {w: "Bola", e: "⚽"}, {w: "Balão", e: "🎈"}, {w: "Mala", e: "💼"}, {w: "Gola", e: "👕"},
+        {w: "Cabelo", e: "💇"}, {w: "Galinha", e: "🐔"}, {w: "Cavalo", e: "🐎"}, {w: "Escola", e: "🏫"}, {w: "Gelado", e: "🍦"},
+        {w: "Janela", e: "🪟"}, {w: "Panela", e: "🥘"}, {w: "Baleia", e: "🐋"}, {w: "Coelho", e: "🐰"}, {w: "Ilha", e: "🏝️"},
+        {w: "Telefone", e: "☎️"}, {w: "Martelo", e: "🔨"}, {w: "Salada", e: "🥗"}, {w: "Relógio", e: "⌚"}, {w: "Palhaço", e: "🤡"},
+        {w: "Sol", e: "☀️"}, {w: "Sal", e: "🧂"}, {w: "Anel", e: "💍"}, {w: "Papel", e: "📄"}, {w: "Mel", e: "🍯"},
+        {w: "Caracol", e: "🐌"}, {w: "Azul", e: "🟦"}, {w: "Funil", e: "🌪️"}, {w: "Barril", e: "🛢️"}, {w: "Farol", e: "🚨"},
+        {w: "Pincel", e: "🖌️"}, {w: "Avental", e: "🎽"}, {w: "Brasil", e: "🇧🇷"}, {w: "Canal", e: "📺"}, {w: "Painel", e: "🖼️"},
+        {w: "Flor", e: "🌸"}, {w: "Blusa", e: "👚"}, {w: "Bloco", e: "🧱"}, {w: "Globo", e: "🌍"}, {w: "Planta", e: "🌱"},
+        {w: "Clube", e: "🏠"}, {w: "Placa", e: "🪧"}, {w: "Flauta", e: "🎶"}, {w: "Bicicleta", e: "🚲"}, {w: "Atleta", e: "🏃"},
+        {w: "Flecha", e: "🏹"}, {w: "Pluma", e: "🪶"}
+    ];
+
+    let sessionWords = [];
+    let score = 0;
+    let currentItem = {};
+    let isListening = false;
+    let capturedText = "";
+
+    // Configuração do Reconhecimento de Voz
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'pt-PT';
+        recognition.continuous = true;
+        
+        recognition.onstart = () => {
+            isListening = true;
+            capturedText = "";
+            document.getElementById('micBtn').classList.add('listening');
+            document.getElementById('feedback').innerText = "A ouvir...";
+            document.getElementById('feedback').style.color = "var(--primary)";
+        };
+
+        recognition.onresult = (event) => {
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) capturedText += event.results[i][0].transcript;
+            }
+        };
+
+        recognition.onend = () => {
+            if (!isListening) processCheck(capturedText);
+            document.getElementById('micBtn').classList.remove('listening');
+        };
+    }
+
+    function initGame() {
+        sessionWords = [...rawWordBank].sort(() => Math.random() - 0.5);
+        score = 0;
+        updateUI();
+        nextWord();
+    }
+
+    function toggleMic() {
+        if (!recognition) {
+            alert("O seu navegador não suporta reconhecimento de voz.");
+            return;
+        }
+        if (isListening) { 
+            isListening = false; 
+            recognition.stop(); 
+        } else { 
+            recognition.start(); 
+        }
+    }
+
+    function processCheck(text) {
+        const spoken = text.toLowerCase().trim();
+        const target = currentItem.w.toLowerCase().trim();
+        
+        // Função simples para normalizar acentos
+        const normalize = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        
+        if (normalize(spoken).includes(normalize(target)) || (target === "sol" && normalize(spoken).includes("so"))) {
+            score++;
+            document.getElementById('feedback').innerText = "MUITO BEM! ✨";
+            document.getElementById('feedback').style.color = "var(--success)";
+            updateUI();
+            
+            if (score >= 40) {
+                setTimeout(() => {
+                    document.getElementById('game-ui').style.display = 'none';
+                    document.getElementById('victory-screen').style.display = 'flex';
+                }, 1000);
+            } else {
+                setTimeout(nextWord, 1200);
+            }
+        } else {
+            document.getElementById('feedback').innerText = `Quase! Ouvi "${spoken}". Tenta outra vez!`;
+            document.getElementById('feedback').style.color = "var(--error)";
+        }
+    }
+
+    function nextWord() {
+        if (sessionWords.length === 0) {
+            sessionWords = [...rawWordBank].sort(() => Math.random() - 0.5);
+        }
+        currentItem = sessionWords.shift();
+        document.getElementById('word').innerText = currentItem.w;
+        document.getElementById('emoji').innerText = currentItem.e;
+        document.getElementById('feedback').innerText = "Clica no 🎤 e diz a palavra";
+        document.getElementById('feedback').style.color = "#7f8c8d";
+    }
+
+    function updateUI() {
+        document.getElementById('counter').innerText = `Estrelas: ${score} / 40`;
+        document.getElementById('progress-bar').style.width = (score / 40 * 100) + "%";
+    }
+
+    function playHelp() {
+        const utter = new SpeechSynthesisUtterance(currentItem.w);
+        utter.lang = 'pt-PT';
+        utter.rate = 0.9;
+        window.speechSynthesis.speak(utter);
+    }
+
+    window.onload = initGame;
+</script>
+</body>
+</html>
