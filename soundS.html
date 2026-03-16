@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio S vs Z: Cobra e Abelha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+        
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #f0f9ff;
+        }
+
+        .card-game {
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 20px 0 rgba(0, 0, 0, 0.05);
+            max-width: 450px;
+            width: 90%;
+        }
+
+        .btn-cobra {
+            background-color: #4CAF50;
+            border-bottom: 8px solid #388E3C;
+            transition: all 0.1s;
+        }
+
+        .btn-cobra:active {
+            border-bottom: 2px solid #388E3C;
+            transform: translateY(6px);
+        }
+
+        .btn-abelha {
+            background-color: #FFD700;
+            border-bottom: 8px solid #FBC02D;
+            transition: all 0.1s;
+        }
+
+        .btn-abelha:active {
+            border-bottom: 2px solid #FBC02D;
+            transform: translateY(6px);
+        }
+
+        .btn-audio {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            transition: all 0.2s;
+        }
+
+        .btn-audio:hover {
+            background-color: #bae6fd;
+        }
+
+        .progress-fill {
+            transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .trophy-bounce {
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-20px); }
+        }
+
+        .shake { animation: shake 0.5s; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Adicionar estilos do botão de voltar (Menu) */
+        .btn-back {
+            position: absolute;
+            top: 12px; /* reduzido para ficar mais acima do que a barra */
+            left: 20px;
+            background: #f1f1f1;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #333;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: background 0.2s;
+            z-index: 20; /* garante que fica acima do conteúdo */
+        }
+
+        .btn-back:hover {
+            background: #e5e5e5;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen py-10">
+
+    <div id="game-container" class="card-game p-8 text-center relative overflow-hidden">
+        <a href="index.html" class="btn-back">⬅ Menu</a>
+        <!-- Barra de Progresso -->
+        <div class="w-full bg-gray-100 rounded-full h-4 mb-2" style="margin-top: 36px;">
+            <div id="progress-bar" class="progress-fill bg-blue-400 h-4 rounded-full" style="width: 0%"></div>
+        </div>
+        <p class="text-gray-500 font-bold mb-4">PALAVRA <span id="current-index-display">1</span> DE 40</p>
+
+        <!-- Botão de Reprodução de Áudio -->
+        <div class="flex justify-center mb-4">
+            <button onclick="speakWord()" class="btn-audio p-4 rounded-full shadow-sm" title="Ouvir palavra">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Imagem Principal -->
+        <div id="word-image" class="text-9xl mb-4 select-none">❓</div>
+
+        <!-- Exibição da Palavra -->
+        <div id="word-text" class="text-5xl font-bold tracking-widest text-gray-800 mb-10 uppercase">
+            ---
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="flex justify-between gap-4">
+            <button onclick="checkAnswer('S')" class="btn-cobra flex-1 py-6 rounded-3xl text-white">
+                <span class="block text-5xl mb-2">🐍</span>
+                <span class="font-bold text-xl uppercase">Som S</span>
+            </button>
+            <button onclick="checkAnswer('Z')" class="btn-abelha flex-1 py-6 rounded-3xl text-gray-800">
+                <span class="block text-5xl mb-2">🐝</span>
+                <span class="font-bold text-xl uppercase">Som Z</span>
+            </button>
+        </div>
+
+        <!-- Ecrã de Vitória -->
+        <div id="victory-screen" class="hidden absolute inset-0 bg-white flex flex-col items-center justify-center p-8 z-10">
+            <div class="trophy-bounce text-9xl mb-6">🏆</div>
+            <h1 class="text-4xl font-bold text-blue-600 mb-2 text-center">PARABÉNS!</h1>
+            <p class="text-gray-600 text-xl mb-8 text-center">És um mestre dos sons!<br>Completaste o desafio das 40 palavras sem repetir.</p>
+            <button onclick="location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-full font-bold text-xl shadow-lg transition">
+                JOGAR DE NOVO
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Banco de Dados adaptado para PT-PT (Vocabulário de Portugal)
+        const baseWords = [
+            { w: "Sapo", s: "S", i: "🐸" }, { w: "Zebra", s: "Z", i: "🦓" },
+            { w: "Casa", s: "Z", i: "🏠" }, { w: "Massa", s: "S", i: "🍝" },
+            { w: "Sopa", s: "S", i: "🥣" }, { w: "Mesa", s: "Z", i: "🪑" },
+            { w: "Rosa", s: "Z", i: "🌹" }, { w: "Osso", s: "S", i: "🦴" },
+            { w: "Sino", s: "S", i: "🔔" }, { w: "Vaso", s: "Z", i: "🏺" },
+            { w: "Sapato", s: "S", i: "👞" }, { w: "Zero", s: "Z", i: "0️⃣" },
+            { w: "Sumo", s: "S", i: "🥤" }, { w: "Buzina", s: "Z", i: "📢" },
+            { w: "Saco", s: "S", i: "🛍️" }, { w: "Azeite", s: "Z", i: "🫙" },
+            { w: "Sereia", s: "S", i: "🧜‍♀️" }, { w: "Zangão", s: "Z", i: "🐝" },
+            { w: "Vassoura", s: "S", i: "🧹" }, { w: "Tesouro", s: "Z", i: "🏴‍☠️" },
+            { w: "Selo", s: "S", i: "✉️" }, { w: "Dúzia", s: "Z", i: "🥚" },
+            { w: "Assado", s: "S", i: "🍖" }, { w: "Vazio", s: "Z", i: "🕳️" },
+            { w: "Sexta", s: "S", i: "🧺" }, { w: "Cozinha", s: "Z", i: "🍳" },
+            { w: "Passo", s: "S", i: "👣" }, { w: "Amizade", s: "Z", i: "🤝" },
+            { w: "Seda", s: "S", i: "👗" }, { w: "Azul", s: "Z", i: "🟦" },
+            { w: "Sabão", s: "S", i: "🧼" }, { w: "Batizado", s: "Z", i: "⛪" },
+            { w: "Salgado", s: "S", i: "🥨" }, { w: "Beleza", s: "Z", i: "✨" },
+            { w: "Sossego", s: "S", i: "🛌" }, { w: "Arroz", s: "Z", i: "🍚" },
+            { w: "Saco", s: "S", i: "🎒" }, { w: "Zorro", s: "Z", i: "🦊" },
+            { w: "Sol", s: "S", i: "☀️" }, { w: "Dezena", s: "Z", i: "🔟" }
+        ];
+
+        let gameWords = [];
+        let currentIndex = 0;
+
+        function initGame() {
+            // Baralha as palavras e garante unicidade
+            gameWords = [...baseWords].sort(() => Math.random() - 0.5);
+            
+            // Garante que temos exatamente 40 se o banco estiver completo
+            if (gameWords.length > 40) {
+                gameWords = gameWords.slice(0, 40);
+            }
+            
+            updateUI();
+        }
+
+        function updateUI() {
+            const currentItem = gameWords[currentIndex];
+            
+            // Texto com lacuna (regex global para substituir a letra correta)
+            // Nota: Em PT-PT, o 'S' intervocálico soa a 'Z', mas a lacuna deve ser preenchida pela grafia.
+            const regex = new RegExp(currentItem.s, 'gi');
+            const displayText = currentItem.w.toUpperCase().replace(regex, "_");
+            document.getElementById('word-text').innerText = displayText;
+            
+            // Imagem
+            document.getElementById('word-image').innerText = currentItem.i;
+            
+            // Contadores
+            document.getElementById('current-index-display').innerText = currentIndex + 1;
+            document.getElementById('progress-bar').style.width = (currentIndex / 40 * 100) + "%";
+        }
+
+        function checkAnswer(choice) {
+            const correctAnswer = gameWords[currentIndex].s;
+            
+            if (choice === correctAnswer) {
+                currentIndex++;
+                if (currentIndex >= 40) {
+                    showVictory();
+                } else {
+                    updateUI();
+                }
+            } else {
+                const container = document.getElementById('game-container');
+                container.classList.add('shake');
+                setTimeout(() => container.classList.remove('shake'), 500);
+            }
+        }
+
+        function speakWord() {
+            if (!window.speechSynthesis) return;
+
+            const word = gameWords[currentIndex].w;
+            const utterance = new SpeechSynthesisUtterance(word);
+            
+            // Configurações para Português de Portugal
+            utterance.lang = 'pt-PT';
+            utterance.rate = 0.7; // Velocidade ligeiramente reduzida para facilitar a perceção
+            utterance.pitch = 1.1; // Tom ligeiramente mais infantil/amigável
+            
+            // Tenta encontrar uma voz PT-PT específica no sistema
+            const voices = window.speechSynthesis.getVoices();
+            const ptPtVoice = voices.find(v => v.lang === 'pt-PT' || v.lang === 'pt_PT');
+            if (ptPtVoice) utterance.voice = ptPtVoice;
+
+            window.speechSynthesis.cancel(); // Para qualquer fala anterior
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function showVictory() {
+            document.getElementById('progress-bar').style.width = "100%";
+            document.getElementById('victory-screen').classList.remove('hidden');
+            document.getElementById('victory-screen').classList.add('flex');
+        }
+
+        // Inicializa as vozes (necessário para alguns browsers carregarem a lista)
+        window.speechSynthesis.onvoiceschanged = () => {};
+
+        initGame();
+    </script>
+</body>
+</html>
