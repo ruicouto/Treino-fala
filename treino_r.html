@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
-    <title>Treino do Som L</title>
+    <title>Treino do Som R</title>
     <style>
         :root {
             --primary: #4a90e2;
@@ -257,7 +257,9 @@
         
         <div id="game-ui">
             <div id="counter" class="star-score" style="display: none;">Estrelas: 0 / 20</div>
-            <div class="progress-container"><div id="progress-bar"></div></div>            <div id="scores" class="star-score">Player: 0/20 | NPC: 0/20</div>            
+            <div class="progress-container"><div id="progress-bar"></div></div>
+            <div id="scores" class="star-score">Jogador: 0 | Pato: 0</div>
+            
             <div id="emoji" class="emoji-display">🎲</div>
             <div id="word" class="word-display">...</div>
             <div id="feedback">Clica no 🎤 e diz a palavra</div>
@@ -278,22 +280,16 @@
     </div>
 
 <script>
-    // Banco de palavras focado no fonema L (Início, Meio e Fim)
+    // Banco de palavras focado no fonema R (Início, Meio e Fim - R simples e duplo RR)
     const rawWordBank = [
-        {w: "Leão", e: "🦁"}, {w: "Lua", e: "🌙"}, {w: "Lápis", e: "✏️"}, {w: "Laranja", e: "🍊"}, {w: "Lobo", e: "🐺"},
-        {w: "Limão", e: "🍋"}, {w: "Livro", e: "📚"}, {w: "Lata", e: "🥫"}, {w: "Leite", e: "🥛"}, {w: "Lupa", e: "🔍"},
-        {w: "Laço", e: "🎀"}, {w: "Lâmpada", e: "💡"}, {w: "Lagarto", e: "🦎"}, {w: "Lixo", e: "🗑️"}, {w: "Língua", e: "👅"},
-        {w: "Loja", e: "🏪"}, {w: "Lanche", e: "🥪"}, {w: "Lenha", e: "🪵"}, {w: "Lula", e: "🦑"}, {w: "Lama", e: "💩"},
-        {w: "Bolo", e: "🍰"}, {w: "Bola", e: "⚽"}, {w: "Balão", e: "🎈"}, {w: "Mala", e: "💼"}, {w: "Gola", e: "👕"},
-        {w: "Cabelo", e: "💇"}, {w: "Galinha", e: "🐔"}, {w: "Cavalo", e: "🐎"}, {w: "Escola", e: "🏫"}, {w: "Gelado", e: "🍦"},
-        {w: "Janela", e: "🪟"}, {w: "Panela", e: "🥘"}, {w: "Baleia", e: "🐋"}, {w: "Coelho", e: "🐰"}, {w: "Ilha", e: "🏝️"},
-        {w: "Telefone", e: "☎️"}, {w: "Martelo", e: "🔨"}, {w: "Salada", e: "🥗"}, {w: "Relógio", e: "⌚"}, {w: "Palhaço", e: "🤡"},
-        {w: "Sol", e: "☀️"}, {w: "Sal", e: "🧂"}, {w: "Anel", e: "💍"}, {w: "Papel", e: "📄"}, {w: "Mel", e: "🍯"},
-        {w: "Caracol", e: "🐌"}, {w: "Azul", e: "🟦"}, {w: "Funil", e: "🌪️"}, {w: "Barril", e: "🛢️"}, {w: "Farol", e: "🚨"},
-        {w: "Pincel", e: "🖌️"}, {w: "Avental", e: "🎽"}, {w: "Brasil", e: "🇧🇷"}, {w: "Canal", e: "📺"}, {w: "Painel", e: "🖼️"},
-        {w: "Flor", e: "🌸"}, {w: "Blusa", e: "👚"}, {w: "Bloco", e: "🧱"}, {w: "Globo", e: "🌍"}, {w: "Planta", e: "🌱"},
-        {w: "Clube", e: "🏠"}, {w: "Placa", e: "🪧"}, {w: "Flauta", e: "🎶"}, {w: "Bicicleta", e: "🚲"}, {w: "Atleta", e: "🏃"},
-        {w: "Flecha", e: "🏹"}, {w: "Pluma", e: "🪶"}
+        {w: "Rato", e: "🐭"}, {w: "Roda", e: "🎡"}, {w: "Rio", e: "💧"}, {w: "Rosa", e: "🌹"}, {w: "Raposa", e: "🦊"},
+        {w: "Raiva", e: "😠"}, {w: "Rádio", e: "📻"}, {w: "Relógio", e: "⌚"}, {w: "Raquete", e: "🎾"}, {w: "Rede", e: "🕸️"},
+        {w: "Rebanho", e: "🐑"}, {w: "Refresco", e: "🥤"}, {w: "Reino", e: "👑"}, {w: "Remo", e: "🚣"}, {w: "Rena", e: "🦌"},
+        {w: "Carro", e: "🚗"}, {w: "Ferro", e: "⚙️"}, {w: "Barro", e: "🏗️"}, {w: "Morro", e: "⛰️"}, {w: "Agora", e: "⏰"},
+        {w: "Aroma", e: "🌸"}, {w: "Pirata", e: "🏴‍☠️"}, {w: "Gravata", e: "👔"}, {w: "Prato", e: "🍽️"}, {w: "Coral", e: "🐠"},
+        {w: "Cereal", e: "🌾"}, {w: "Moral", e: "📖"}, {w: "Literal", e: "📚"}, {w: "Girassol", e: "🌻"}, {w: "Parede", e: "🧱"},
+        {w: "Mar", e: "🌊"}, {w: "Por", e: "📌"}, {w: "Flor", e: "🌸"}, {w: "Cor", e: "🎨"}, {w: "Lar", e: "🏠"},
+        {w: "Ver", e: "👁️"}, {w: "Sofrer", e: "😢"}, {w: "Dor", e: "⚡"}, {w: "Favor", e: "🙏"}, {w: "Motor", e: "🏎️"}
     ];
 
     let sessionWords = [];
@@ -438,7 +434,7 @@
         // Função simples para normalizar acentos
         const normalize = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         
-        if (normalize(spoken).includes(normalize(target)) || (target === "sol" && normalize(spoken).includes("so"))) {
+        if (normalize(spoken).includes(normalize(target))) {
             score++;
             const playerRunner = document.getElementById('player-runner');
             playerRunner.classList.add('jumping');
@@ -464,9 +460,9 @@
                     const playerSuccessful = score;
                     const npcSuccessful = opponentPosition - opponentFailures;
                     if (playerSuccessful > npcSuccessful) {
-                        ranking.innerHTML = `1º: Player com ${playerSuccessful} hurdles<br>2º: NPC com ${npcSuccessful} hurdles`;
+                        ranking.innerHTML = `1º: Jogador com ${playerSuccessful} hurdles<br>2º: Pato com ${npcSuccessful} hurdles`;
                     } else if (npcSuccessful > playerSuccessful) {
-                        ranking.innerHTML = `1º: NPC com ${npcSuccessful} hurdles<br>2º: Player com ${playerSuccessful} hurdles`;
+                        ranking.innerHTML = `1º: Pato com ${npcSuccessful} hurdles<br>2º: Jogador com ${playerSuccessful} hurdles`;
                     } else {
                         ranking.innerHTML = `Empate: Ambos com ${playerSuccessful} hurdles`;
                     }

@@ -2,81 +2,126 @@
 <html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desafio S vs Z: Cobra e Abelha</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Treino do Som S</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
-        
-        body {
-            font-family: 'Fredoka', sans-serif;
-            background-color: #f0f9ff;
+        :root {
+            --primary: #4a90e2;
+            --success: #2ecc71;
+            --error: #e74c3c;
+            --warning: #f1c40f;
+            --bg: #f0f7ff;
         }
 
-        .card-game {
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg) url('img/background.jpg') no-repeat center;
+            background-size: 150% auto;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
             background: white;
             border-radius: 40px;
-            box-shadow: 0 20px 0 rgba(0, 0, 0, 0.05);
-            max-width: 450px;
+            padding: 70px 30px 30px;
             width: 90%;
+            max-width: 800px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            max-height: 800px;
         }
 
-        .btn-cobra {
-            background-color: #4CAF50;
-            border-bottom: 8px solid #388E3C;
-            transition: all 0.1s;
+        .rocket-container {
+            flex: 1;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid #4a90e2;
+            min-height: 150px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
         }
 
-        .btn-cobra:active {
-            border-bottom: 2px solid #388E3C;
-            transform: translateY(6px);
+        .moon {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 80px;
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3));
         }
 
-        .btn-abelha {
-            background-color: #FFD700;
-            border-bottom: 8px solid #FBC02D;
-            transition: all 0.1s;
+        .rocket {
+            position: absolute;
+            bottom: 40px;
+            font-size: 50px;
+            transition: left 0.6s ease-in-out;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
         }
 
-        .btn-abelha:active {
-            border-bottom: 2px solid #FBC02D;
-            transform: translateY(6px);
+        .rocket-flame {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 30px;
+            animation: flicker 0.1s infinite;
         }
 
-        .btn-audio {
-            background-color: #e0f2fe;
-            color: #0369a1;
-            transition: all 0.2s;
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
 
-        .btn-audio:hover {
-            background-color: #bae6fd;
+        .explosion {
+            position: absolute;
+            font-size: 60px;
+            animation: blast 0.8s ease-out forwards;
+            pointer-events: none;
         }
 
-        .progress-fill {
-            transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        @keyframes blast {
+            0% { 
+                opacity: 1;
+                transform: scale(0.8);
+            }
+            100% { 
+                opacity: 0;
+                transform: scale(1.5);
+            }
         }
 
-        .trophy-bounce {
-            animation: bounce 1s infinite alternate;
+        .smoke {
+            position: absolute;
+            font-size: 40px;
+            animation: smoke-rise 1.2s ease-out forwards;
+            pointer-events: none;
         }
 
-        @keyframes bounce {
-            from { transform: translateY(0); }
-            to { transform: translateY(-20px); }
+        @keyframes smoke-rise {
+            0% { 
+                opacity: 1;
+                transform: translateY(0) translateX(0);
+            }
+            100% { 
+                opacity: 0;
+                transform: translateY(-80px) translateX(var(--tx, 0));
+            }
         }
 
-        .shake { animation: shake 0.5s; }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        /* Adicionar estilos do botão de voltar (Menu) */
         .btn-back {
             position: absolute;
-            top: 12px; /* reduzido para ficar mais acima do que a barra */
+            top: 20px;
             left: 20px;
             background: #f1f1f1;
             border: none;
@@ -88,168 +133,319 @@
             font-size: 0.9rem;
             font-weight: bold;
             transition: background 0.2s;
-            z-index: 20; /* garante que fica acima do conteúdo */
+            z-index: 10;
         }
 
         .btn-back:hover {
             background: #e5e5e5;
         }
+
+        .progress-container {
+            background: #eee;
+            border-radius: 20px;
+            height: 15px;
+            margin: 25px 0;
+            overflow: hidden;
+            border: 2px solid #eee;
+        }
+
+        #progress-bar {
+            background: linear-gradient(90deg, var(--success), #58d68d);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .emoji-display {
+            font-size: 100px;
+            margin: 20px 0;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+        }
+
+        .word-display {
+            font-size: 48px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--text);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+        
+        #feedback {
+            height: 60px;
+            font-weight: bold;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .circle-btn {
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 38px;
+            color: white;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-mic {
+            background: var(--primary);
+            box-shadow: 0 6px #2980b9;
+        }
+
+        .btn-mic:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px #2980b9;
+        }
+
+        .btn-audio {
+            background: var(--warning);
+            box-shadow: 0 6px #d4ac0d;
+        }
+
+        .btn-audio:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px #d4ac0d;
+        }
+
+        .listening {
+            animation: pulse 1s infinite;
+            background: var(--error) !important;
+            box-shadow: 0 6px #c0392b !important;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(231, 76, 60, 0); }
+  🍽️          100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+
+        #victory-screen {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            border-radius: 40px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .star-score {
+            font-size: 1.2rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen py-10">
-
-    <div id="game-container" class="card-game p-8 text-center relative overflow-hidden">
+<body>
+    <div class="game-container">
         <a href="index.html" class="btn-back">⬅ Menu</a>
-        <!-- Barra de Progresso -->
-        <div class="w-full bg-gray-100 rounded-full h-4 mb-2" style="margin-top: 36px;">
-            <div id="progress-bar" class="progress-fill bg-blue-400 h-4 rounded-full" style="width: 0%"></div>
+        
+        <div class="rocket-container">
+            <div class="moon">🌙</div>
+            <div id="rocket" class="rocket">🚀</div>
+            <div id="rocket-flame" class="rocket-flame">🔥</div>
+            <div id="explosion-area"></div>
         </div>
-        <p class="text-gray-500 font-bold mb-4">PALAVRA <span id="current-index-display">1</span> DE 40</p>
+        
+        <div id="game-ui">
+            <div id="counter" class="star-score" style="display: none;">Estrelas: 0 / 20</div>
+            <div class="progress-container"><div id="progress-bar"></div></div>
+            <div id="scores" class="star-score">Jogador: 0 | Pato: 0</div>
+            
+            <div id="emoji" class="emoji-display">🎲</div>
+            <div id="word" class="word-display">...</div>
+            <div id="feedback">Escolhe o som correto</div>
 
-        <!-- Botão de Reprodução de Áudio -->
-        <div class="flex justify-center mb-4">
-            <button onclick="speakWord()" class="btn-audio p-4 rounded-full shadow-sm" title="Ouvir palavra">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                </svg>
-            </button>
-        </div>
-
-        <!-- Imagem Principal -->
-        <div id="word-image" class="text-9xl mb-4 select-none">❓</div>
-
-        <!-- Exibição da Palavra -->
-        <div id="word-text" class="text-5xl font-bold tracking-widest text-gray-800 mb-10 uppercase">
-            ---
-        </div>
-
-        <!-- Botões de Ação -->
-        <div class="flex justify-between gap-4">
-            <button onclick="checkAnswer('S')" class="btn-cobra flex-1 py-6 rounded-3xl text-white">
-                <span class="block text-5xl mb-2">🐍</span>
-                <span class="font-bold text-xl uppercase">Som S</span>
-            </button>
-            <button onclick="checkAnswer('Z')" class="btn-abelha flex-1 py-6 rounded-3xl text-gray-800">
-                <span class="block text-5xl mb-2">🐝</span>
-                <span class="font-bold text-xl uppercase">Som Z</span>
-            </button>
+            <div class="controls">
+                <button onclick="checkAnswer('S')" class="circle-btn" style="background: #4CAF50; box-shadow: 0 6px #388E3C;">🐍</button>
+                <button onclick="checkAnswer('Z')" class="circle-btn" style="background: #FFD700; box-shadow: 0 6px #FBC02D; color: #333;">🐝</button>
+                <button class="circle-btn btn-audio" onclick="playHelp()">🔊</button>
+            </div>
         </div>
 
-        <!-- Ecrã de Vitória -->
-        <div id="victory-screen" class="hidden absolute inset-0 bg-white flex flex-col items-center justify-center p-8 z-10">
-            <div class="trophy-bounce text-9xl mb-6">🏆</div>
-            <h1 class="text-4xl font-bold text-blue-600 mb-2 text-center">PARABÉNS!</h1>
-            <p class="text-gray-600 text-xl mb-8 text-center">És um mestre dos sons!<br>Completaste o desafio das 40 palavras sem repetir.</p>
-            <button onclick="location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-4 rounded-full font-bold text-xl shadow-lg transition">
-                JOGAR DE NOVO
-            </button>
+        <div id="victory-screen">
+            <div style="font-size: 100px;" id="medal">🏆</div>
+            <h2 style="color: var(--primary); font-size: 2rem;">INCRÍVEL!</h2>
+            <p id="victory-text" style="color: #666; margin-bottom: 30px;"></p>
+            <div id="ranking" style="color: #666; margin-bottom: 20px;"></div>
+            <a href="index.html" style="background: var(--success); color: white; padding: 15px 40px; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 1.2rem; box-shadow: 0 5px #27ae60;">Voltar ao Menu</a>
         </div>
     </div>
 
-    <script>
-        // Banco de Dados adaptado para PT-PT (Vocabulário de Portugal)
-        const baseWords = [
-            { w: "Sapo", s: "S", i: "🐸" }, { w: "Zebra", s: "Z", i: "🦓" },
-            { w: "Casa", s: "Z", i: "🏠" }, { w: "Massa", s: "S", i: "🍝" },
-            { w: "Sopa", s: "S", i: "🥣" }, { w: "Mesa", s: "Z", i: "🪑" },
-            { w: "Rosa", s: "Z", i: "🌹" }, { w: "Osso", s: "S", i: "🦴" },
-            { w: "Sino", s: "S", i: "🔔" }, { w: "Vaso", s: "Z", i: "🏺" },
-            { w: "Sapato", s: "S", i: "👞" }, { w: "Zero", s: "Z", i: "0️⃣" },
-            { w: "Sumo", s: "S", i: "🥤" }, { w: "Buzina", s: "Z", i: "📢" },
-            { w: "Saco", s: "S", i: "🛍️" }, { w: "Azeite", s: "Z", i: "🫙" },
-            { w: "Sereia", s: "S", i: "🧜‍♀️" }, { w: "Zangão", s: "Z", i: "🐝" },
-            { w: "Vassoura", s: "S", i: "🧹" }, { w: "Tesouro", s: "Z", i: "🏴‍☠️" },
-            { w: "Selo", s: "S", i: "✉️" }, { w: "Dúzia", s: "Z", i: "🥚" },
-            { w: "Assado", s: "S", i: "🍖" }, { w: "Vazio", s: "Z", i: "🕳️" },
-            { w: "Sexta", s: "S", i: "🧺" }, { w: "Cozinha", s: "Z", i: "🍳" },
-            { w: "Passo", s: "S", i: "👣" }, { w: "Amizade", s: "Z", i: "🤝" },
-            { w: "Seda", s: "S", i: "👗" }, { w: "Azul", s: "Z", i: "🟦" },
-            { w: "Sabão", s: "S", i: "🧼" }, { w: "Batizado", s: "Z", i: "⛪" },
-            { w: "Salgado", s: "S", i: "🥨" }, { w: "Beleza", s: "Z", i: "✨" },
-            { w: "Sossego", s: "S", i: "🛌" }, { w: "Arroz", s: "Z", i: "🍚" },
-            { w: "Saco", s: "S", i: "🎒" }, { w: "Zorro", s: "Z", i: "🦊" },
-            { w: "Sol", s: "S", i: "☀️" }, { w: "Dezena", s: "Z", i: "🔟" }
-        ];
+<script>
+    // Banco de palavras focado no fonema S (Início, Meio e Fim)
+    const rawWordBank = [
+        {w: "Sapo", s: "S", e: "🐸"}, {w: "Sapato", s: "S", e: "👞"}, {w: "Saco", s: "S", e: "🛍️"}, {w: "Sabão", s: "S", e: "🧼"}, {w: "Salgado", s: "S", e: "🥨"},
+        {w: "Seda", s: "S", e: "👗"}, {w: "Selo", s: "S", e: "✉️"}, {w: "Sereia", s: "S", e: "🧜‍♀️"}, {w: "Sexta", s: "S", e: "🧺"}, {w: "Sino", s: "S", e: "🔔"},
+        {w: "Sopa", s: "S", e: "🥣"}, {w: "Sossego", s: "S", e: "🛌"}, {w: "Sol", s: "S", e: "☀️"}, {w: "Sumo", s: "S", e: "🥤"}, {w: "Saco", s: "S", e: "🎒"},
+        {w: "Casa", s: "Z", e: "🏠"}, {w: "Massa", s: "Z", e: "🍝"}, {w: "Mesa", s: "Z", e: "🪑"}, {w: "Vaso", s: "Z", e: "🏺"}, {w: "Osso", s: "Z", e: "🦴"},
+        {w: "Rosa", s: "Z", e: "🌹"}, {w: "Passo", s: "Z", e: "👣"}, {w: "Assado", s: "Z", e: "🍖"}, {w: "Vassoura", s: "Z", e: "🧹"}, {w: "Azeite", s: "Z", e: "🫙"},
+        {w: "Buzina", s: "Z", e: "📢"}, {w: "Cozinha", s: "Z", e: "🍳"}, {w: "Dúzia", s: "Z", e: "🥚"}, {w: "Dezena", s: "Z", e: "🔟"}, {w: "Tesouro", s: "Z", e: "🏴‍☠️"},
+        {w: "Amizade", s: "Z", e: "🤝"}, {w: "Beleza", s: "Z", e: "✨"}, {w: "Azul", s: "Z", e: "🟦"}, {w: "Arroz", s: "Z", e: "🍚"}, {w: "Vazio", s: "Z", e: "🕳️"},
+        {w: "Batizado", s: "Z", e: "⛪"}, {w: "Zebra", s: "Z", e: "🦓"}, {w: "Zero", s: "Z", e: "0️⃣"}, {w: "Zorro", s: "Z", e: "🦊"}, {w: "Zangão", s: "Z", e: "🐝"}
+    ];
 
-        let gameWords = [];
-        let currentIndex = 0;
+    let sessionWords = [];
+    let score = 0;
+    let currentItem = {};
+    let failures = 0;
+    let rocketPosition = 0;
+    let attempts = 0;
 
-        function initGame() {
-            // Baralha as palavras e garante unicidade
-            gameWords = [...baseWords].sort(() => Math.random() - 0.5);
-            
-            // Garante que temos exatamente 40 se o banco estiver completo
-            if (gameWords.length > 40) {
-                gameWords = gameWords.slice(0, 40);
-            }
-            
+    function initGame() {
+        sessionWords = [...rawWordBank.slice(0,20)].sort(() => Math.random() - 0.5);
+        score = 0;
+        failures = 0;
+        rocketPosition = 0;
+        attempts = 0;
+        updateRocket();
+        updateUI();
+        nextWord();
+    }
+
+    function updateRocket() {
+        const container = document.querySelector('.rocket-container');
+        const width = container.offsetWidth - 100;
+        const maxPos = 20;
+        document.getElementById('rocket').style.left = `${20 + (rocketPosition / maxPos) * width}px`;
+    }
+
+    function showExplosion() {
+        const rocket = document.getElementById('rocket');
+        const explosionArea = document.getElementById('explosion-area');
+        const rocketRect = rocket.getBoundingClientRect();
+        const containerRect = document.querySelector('.rocket-container').getBoundingClientRect();
+        
+        // Blast effect
+        const blast = document.createElement('div');
+        blast.className = 'explosion';
+        blast.textContent = '💥';
+        blast.style.left = `${rocketRect.left - containerRect.left}px`;
+        blast.style.top = `${rocketRect.top - containerRect.top}px`;
+        explosionArea.appendChild(blast);
+        
+        // Multiple smoke puffs
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                const smoke = document.createElement('div');
+                smoke.className = 'smoke';
+                smoke.textContent = '💨';
+                smoke.style.left = `${rocketRect.left - containerRect.left + (Math.random() - 0.5) * 30}px`;
+                smoke.style.top = `${rocketRect.top - containerRect.top}px`;
+                smoke.style.setProperty('--tx', `${(Math.random() - 0.5) * 60}px`);
+                explosionArea.appendChild(smoke);
+            }, i * 100);
+        }
+    }
+
+    function checkAnswer(choice) {
+        const correctAnswer = currentItem.s;
+        attempts++;
+        
+        if (choice === correctAnswer) {
+            score++;
+            rocketPosition++;
+            document.getElementById('feedback').innerText = "MUITO BEM! 🚀";
+            document.getElementById('feedback').style.color = "var(--success)";
+            updateRocket();
             updateUI();
-        }
-
-        function updateUI() {
-            const currentItem = gameWords[currentIndex];
             
-            // Texto com lacuna (regex global para substituir a letra correta)
-            // Nota: Em PT-PT, o 'S' intervocálico soa a 'Z', mas a lacuna deve ser preenchida pela grafia.
-            const regex = new RegExp(currentItem.s, 'gi');
-            const displayText = currentItem.w.toUpperCase().replace(regex, "_");
-            document.getElementById('word-text').innerText = displayText;
-            
-            // Imagem
-            document.getElementById('word-image').innerText = currentItem.i;
-            
-            // Contadores
-            document.getElementById('current-index-display').innerText = currentIndex + 1;
-            document.getElementById('progress-bar').style.width = (currentIndex / 40 * 100) + "%";
-        }
-
-        function checkAnswer(choice) {
-            const correctAnswer = gameWords[currentIndex].s;
-            
-            if (choice === correctAnswer) {
-                currentIndex++;
-                if (currentIndex >= 40) {
-                    showVictory();
-                } else {
-                    updateUI();
-                }
+            if (attempts >= 20) {
+                setTimeout(() => {
+                    document.getElementById('game-ui').style.display = 'none';
+                    const medal = document.getElementById('medal');
+                    const victoryText = document.getElementById('victory-text');
+                    const ranking = document.getElementById('ranking');
+                    
+                    if (score >= 18) {
+                        medal.innerText = '🌙';
+                        victoryText.innerText = `Parabéns! Chegaste à lua com ${score} de 20 palavras!`;
+                        ranking.innerHTML = `Foguete decolou com sucesso!`;
+                    } else {
+                        medal.innerText = '🌍';
+                        victoryText.innerText = `Quase! Desceste na Terra com ${score} de 20 palavras.`;
+                        ranking.innerHTML = `Treina mais para chegar à lua!`;
+                    }
+                    
+                    document.getElementById('victory-screen').style.display = 'flex';
+                }, 1000);
             } else {
-                const container = document.getElementById('game-container');
-                container.classList.add('shake');
-                setTimeout(() => container.classList.remove('shake'), 500);
+                setTimeout(nextWord, 1200);
+            }
+        } else {
+            failures++;
+            showExplosion();
+            document.getElementById('feedback').innerText = `Errado! Tenta outra vez.`;
+            document.getElementById('feedback').style.color = "var(--error)";
+            
+            if (attempts >= 20) {
+                setTimeout(() => {
+                    document.getElementById('game-ui').style.display = 'none';
+                    const medal = document.getElementById('medal');
+                    const victoryText = document.getElementById('victory-text');
+                    const ranking = document.getElementById('ranking');
+                    
+                    if (score >= 18) {
+                        medal.innerText = '🌙';
+                        victoryText.innerText = `Parabéns! Chegaste à lua com ${score} de 20 palavras!`;
+                        ranking.innerHTML = `Foguete decolou com sucesso!`;
+                    } else {
+                        medal.innerText = '🌍';
+                        victoryText.innerText = `Quase! Desceste na Terra com ${score} de 20 palavras.`;
+                        ranking.innerHTML = `Treina mais para chegar à lua!`;
+                    }
+                    
+                    document.getElementById('victory-screen').style.display = 'flex';
+                }, 1000);
+            } else {
+                setTimeout(nextWord, 800);
             }
         }
+    }
 
-        function speakWord() {
-            if (!window.speechSynthesis) return;
-
-            const word = gameWords[currentIndex].w;
-            const utterance = new SpeechSynthesisUtterance(word);
-            
-            // Configurações para Português de Portugal
-            utterance.lang = 'pt-PT';
-            utterance.rate = 0.7; // Velocidade ligeiramente reduzida para facilitar a perceção
-            utterance.pitch = 1.1; // Tom ligeiramente mais infantil/amigável
-            
-            // Tenta encontrar uma voz PT-PT específica no sistema
-            const voices = window.speechSynthesis.getVoices();
-            const ptPtVoice = voices.find(v => v.lang === 'pt-PT' || v.lang === 'pt_PT');
-            if (ptPtVoice) utterance.voice = ptPtVoice;
-
-            window.speechSynthesis.cancel(); // Para qualquer fala anterior
-            window.speechSynthesis.speak(utterance);
+    function nextWord() {
+        if (sessionWords.length === 0) {
+            sessionWords = [...rawWordBank].sort(() => Math.random() - 0.5);
         }
+        currentItem = sessionWords.shift();
+        document.getElementById('word').innerText = currentItem.w;
+        document.getElementById('emoji').innerText = currentItem.e;
+        document.getElementById('feedback').innerText = "Escolhe o som correto";
+        document.getElementById('feedback').style.color = "#7f8c8d";
+    }
 
-        function showVictory() {
-            document.getElementById('progress-bar').style.width = "100%";
-            document.getElementById('victory-screen').classList.remove('hidden');
-            document.getElementById('victory-screen').classList.add('flex');
-        }
+    function updateUI() {
+        document.getElementById('counter').innerText = `Palavras: ${score} / 20`;
+        document.getElementById('progress-bar').style.width = (score / 20 * 100) + "%";
+        document.getElementById('scores').innerText = `Progresso: ${score} / 20`;
+    }
 
-        // Inicializa as vozes (necessário para alguns browsers carregarem a lista)
-        window.speechSynthesis.onvoiceschanged = () => {};
+    function playHelp() {
+        const utter = new SpeechSynthesisUtterance(currentItem.w);
+        utter.lang = 'pt-PT';
+        utter.rate = 0.9;
+        window.speechSynthesis.speak(utter);
+    }
 
-        initGame();
-    </script>
+    window.onload = initGame;
+</script>
 </body>
 </html>
