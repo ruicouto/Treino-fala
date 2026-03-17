@@ -28,10 +28,83 @@
             border-radius: 40px;
             padding: 30px;
             width: 90%;
-            max-width: 450px;
+            max-width: 800px;
             text-align: center;
             box-shadow: 0 15px 40px rgba(0,0,0,0.1);
             position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            max-height: 800px;
+        }
+
+        .race-container {
+            flex: 1;
+            background: url('img/road.png') no-repeat center/cover;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid #4a90e2;
+            min-height: 150px; /* Ensure space for two tracks */
+        }
+
+        .track.opponent-track {
+            bottom: 100px;
+        }
+
+        .hurdle {
+            position: absolute;
+            bottom: 30px;
+            width: 20px;
+            height: 70px;
+            background: url('img/hurdle.png') no-repeat center/contain;
+            border-radius: 5px 5px 0 0;
+            transition: transform 0.5s;
+        }
+
+        .hurdle.fallen {
+            transform: rotate(90deg);
+        }
+
+        .runner {
+            position: absolute;
+            bottom: 35px;
+            font-size: 40px;
+            transition: left 0.5s ease-in-out;
+            transform: scaleX(-1);
+        }
+
+        .runner.opponent-runner {
+            bottom: 135px;
+        }
+
+        .runner.jumping {
+            animation: jump 0.5s ease-in-out;
+        }
+
+        @keyframes jump {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0); }
+        }
+
+        .player-runner {
+            color: #FF0000;
+        }
+
+        .opponent-runner {
+            color: #0000FF;
+        }
+
+        .finish-line {
+            position: absolute;
+            right: 10px;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            background: linear-gradient(to bottom, black 50%, white 50%);
+            background-size: 5px 20px;
         }
 
         .btn-back {
@@ -48,6 +121,7 @@
             font-size: 0.9rem;
             font-weight: bold;
             transition: background 0.2s;
+            z-index: 10;
         }
 
         .btn-back:hover {
@@ -172,10 +246,17 @@
     <div class="game-container">
         <a href="index.html" class="btn-back">⬅ Menu</a>
         
+        <div class="race-container">
+            <div id="opponent-hurdles"></div>
+            <div id="hurdles"></div>
+            <div id="player-runner" class="runner player-runner">🏃‍♂️</div>
+            <div id="opponent-runner" class="runner opponent-runner">🦆</div>
+            <div class="finish-line"></div>
+        </div>
+        
         <div id="game-ui">
-            <div id="counter" class="star-score">Estrelas: 0 / 40</div>
-            <div class="progress-container"><div id="progress-bar"></div></div>
-            
+            <div id="counter" class="star-score" style="display: none;">Estrelas: 0 / 20</div>
+            <div class="progress-container"><div id="progress-bar"></div></div>            <div id="scores" class="star-score">Player: 0/20 | NPC: 0/20</div>            
             <div id="emoji" class="emoji-display">🎲</div>
             <div id="word" class="word-display">...</div>
             <div id="feedback">Clica no 🎤 e diz a palavra</div>
@@ -187,9 +268,10 @@
         </div>
 
         <div id="victory-screen">
-            <div style="font-size: 100px;">🏆</div>
+            <div style="font-size: 100px;" id="medal">🏆</div>
             <h2 style="color: var(--primary); font-size: 2rem;">INCRÍVEL!</h2>
-            <p style="color: #666; margin-bottom: 30px;">Conseguiste as 40 estrelas do L!</p>
+            <p id="victory-text" style="color: #666; margin-bottom: 30px;"></p>
+            <div id="ranking" style="color: #666; margin-bottom: 20px;"></div>
             <a href="index.html" style="background: var(--success); color: white; padding: 15px 40px; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 1.2rem; box-shadow: 0 5px #27ae60;">Voltar ao Menu</a>
         </div>
     </div>
@@ -218,6 +300,14 @@
     let currentItem = {};
     let isListening = false;
     let capturedText = "";
+    let failures = 0;
+    let playerPosition = 0;
+    let opponentPosition = 0;
+    let attempts = 0;
+    let opponentFailures = 0;
+    let lastChecked = 0;
+    let hurdles = [];
+    let opponentHurdles = [];
 
     // Configuração do Reconhecimento de Voz
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -234,6 +324,13 @@
             document.getElementById('micBtn').classList.add('listening');
             document.getElementById('feedback').innerText = "A ouvir...";
             document.getElementById('feedback').style.color = "var(--primary)";
+            // Automatically stop after 3 seconds
+            setTimeout(() => {
+                if (isListening) {
+                    isListening = false;
+                    recognition.stop();
+                }
+            }, 3000);
         };
 
         recognition.onresult = (event) => {
@@ -249,10 +346,68 @@
     }
 
     function initGame() {
-        sessionWords = [...rawWordBank].sort(() => Math.random() - 0.5);
+        sessionWords = [...rawWordBank.slice(0,20)].sort(() => Math.random() - 0.5);
         score = 0;
+        failures = 0;
+        playerPosition = 0;
+        opponentPosition = 0;
+        attempts = 0;
+        opponentFailures = 0;
+        lastChecked = 0;
+        initHurdles();
+        updateRunners();
         updateUI();
         nextWord();
+    }
+
+    function initHurdles() {
+        const hurdlesContainer = document.getElementById('hurdles');
+        const opponentHurdlesContainer = document.getElementById('opponent-hurdles');
+        const raceContainer = document.querySelector('.race-container');
+        hurdlesContainer.innerHTML = '';
+        opponentHurdlesContainer.innerHTML = '';
+        hurdles = [];
+        opponentHurdles = [];
+        const numHurdles = 20;
+        const containerWidth = raceContainer.clientWidth - 40; // account for padding/margins
+        for (let i = 0; i < numHurdles; i++) {
+            // Player hurdles
+            const hurdle = document.createElement('div');
+            hurdle.className = 'hurdle';
+            hurdle.style.left = `${10 + (i * containerWidth / (numHurdles - 1))}px`;
+            hurdlesContainer.appendChild(hurdle);
+            hurdles.push(hurdle);
+
+            // Opponent hurdles
+            const oppHurdle = document.createElement('div');
+            oppHurdle.className = 'hurdle';
+            oppHurdle.style.left = `${10 + (i * containerWidth / (numHurdles - 1))}px`;
+            oppHurdle.style.bottom = '130px';
+            opponentHurdlesContainer.appendChild(oppHurdle);
+            opponentHurdles.push(oppHurdle);
+        }
+    }
+
+    function updateRunners() {
+        const container = document.querySelector('.race-container');
+        const width = container.offsetWidth - 60; // account for finish line
+        const maxPos = 20;
+        document.getElementById('player-runner').style.left = `${-10 + (playerPosition / maxPos) * width}px`;
+        document.getElementById('opponent-runner').style.left = `${-10 + (opponentPosition / maxPos) * width}px`;
+    }
+
+    function knockHurdle() {
+        const index = (playerPosition - 1) % hurdles.length;
+        if (!hurdles[index].classList.contains('fallen')) {
+            hurdles[index].classList.add('fallen');
+        }
+    }
+
+    function knockOpponentHurdle() {
+        const index = (opponentPosition - 1) % opponentHurdles.length;
+        if (!opponentHurdles[index].classList.contains('fallen')) {
+            opponentHurdles[index].classList.add('fallen');
+        }
     }
 
     function toggleMic() {
@@ -260,15 +415,22 @@
             alert("O seu navegador não suporta reconhecimento de voz.");
             return;
         }
-        if (isListening) { 
-            isListening = false; 
-            recognition.stop(); 
-        } else { 
-            recognition.start(); 
-        }
+        if (isListening) return; // Already listening, do nothing
+        recognition.start();
     }
 
     function processCheck(text) {
+        attempts++;
+        playerPosition = attempts;
+        if (playerPosition % 2 === 0 && playerPosition > lastChecked) {
+            lastChecked = playerPosition;
+            const playerPercent = failures / attempts;
+            const opponentPercent = opponentFailures / attempts;
+            if (playerPercent > opponentPercent) {
+                opponentFailures++;
+                knockOpponentHurdle();
+            }
+        }
         const spoken = text.toLowerCase().trim();
         const target = currentItem.w.toLowerCase().trim();
         
@@ -277,19 +439,50 @@
         
         if (normalize(spoken).includes(normalize(target)) || (target === "sol" && normalize(spoken).includes("so"))) {
             score++;
+            const playerRunner = document.getElementById('player-runner');
+            playerRunner.classList.add('jumping');
+            setTimeout(() => playerRunner.classList.remove('jumping'), 500);
+            opponentPosition++;
             document.getElementById('feedback').innerText = "MUITO BEM! ✨";
             document.getElementById('feedback').style.color = "var(--success)";
+            updateRunners();
             updateUI();
             
-            if (score >= 40) {
+            if (score >= 20) {
                 setTimeout(() => {
                     document.getElementById('game-ui').style.display = 'none';
+                    const victoryText = document.getElementById('victory-text');
+                    victoryText.innerText = `conseguiste ${score} palavras!`;
+                    const medal = document.getElementById('medal');
+                    if (opponentPosition >= playerPosition) {
+                        medal.innerText = '🥈';
+                    } else {
+                        medal.innerText = '🥇';
+                    }
+                    const ranking = document.getElementById('ranking');
+                    const playerSuccessful = score;
+                    const npcSuccessful = opponentPosition - opponentFailures;
+                    if (playerSuccessful > npcSuccessful) {
+                        ranking.innerHTML = `1º: Player com ${playerSuccessful} hurdles<br>2º: NPC com ${npcSuccessful} hurdles`;
+                    } else if (npcSuccessful > playerSuccessful) {
+                        ranking.innerHTML = `1º: NPC com ${npcSuccessful} hurdles<br>2º: Player com ${playerSuccessful} hurdles`;
+                    } else {
+                        ranking.innerHTML = `Empate: Ambos com ${playerSuccessful} hurdles`;
+                    }
                     document.getElementById('victory-screen').style.display = 'flex';
                 }, 1000);
             } else {
                 setTimeout(nextWord, 1200);
             }
         } else {
+            failures++;
+            const failureRate = failures / attempts;
+            if (Math.random() < failureRate) {
+                opponentPosition++;
+            }
+            knockHurdle();
+            updateRunners();
+            updateUI();
             document.getElementById('feedback').innerText = `Quase! Ouvi "${spoken}". Tenta outra vez!`;
             document.getElementById('feedback').style.color = "var(--error)";
         }
@@ -307,8 +500,11 @@
     }
 
     function updateUI() {
-        document.getElementById('counter').innerText = `Estrelas: ${score} / 40`;
-        document.getElementById('progress-bar').style.width = (score / 40 * 100) + "%";
+        document.getElementById('counter').innerText = `Estrelas: ${score} / 20`;
+        document.getElementById('progress-bar').style.width = (score / 20 * 100) + "%";
+        const playerSuccessful = score;
+        const npcSuccessful = opponentPosition - opponentFailures;
+        document.getElementById('scores').innerText = `Player: ${playerSuccessful}/20 | NPC: ${npcSuccessful}/20`;
     }
 
     function playHelp() {
