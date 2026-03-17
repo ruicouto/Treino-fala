@@ -39,73 +39,84 @@
             max-height: 800px;
         }
 
-        .race-container {
+        .rocket-container {
             flex: 1;
-            background: url('img/road.png') no-repeat center/cover;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             border-radius: 20px;
             margin-bottom: 20px;
             position: relative;
             overflow: hidden;
             border: 3px solid #4a90e2;
             min-height: 150px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
         }
 
-        .track.opponent-track {
-            bottom: 100px;
-        }
-
-        .hurdle {
+        .moon {
             position: absolute;
-            bottom: 30px;
-            width: 20px;
-            height: 70px;
-            background: url('img/hurdle.png') no-repeat center/contain;
-            border-radius: 5px 5px 0 0;
-            transition: transform 0.5s;
+            top: 20px;
+            right: 30px;
+            font-size: 80px;
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3));
         }
 
-        .hurdle.fallen {
-            transform: rotate(90deg);
-        }
-
-        .runner {
+        .rocket {
             position: absolute;
-            bottom: 35px;
-            font-size: 40px;
-            transition: left 0.5s ease-in-out;
-            transform: scaleX(-1);
+            bottom: 40px;
+            font-size: 50px;
+            transition: left 0.6s ease-in-out;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
         }
 
-        .runner.opponent-runner {
-            bottom: 135px;
-        }
-
-        .runner.jumping {
-            animation: jump 0.5s ease-in-out;
-        }
-
-        @keyframes jump {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0); }
-        }
-
-        .player-runner {
-            color: #FF0000;
-        }
-
-        .opponent-runner {
-            color: #0000FF;
-        }
-
-        .finish-line {
+        .rocket-flame {
             position: absolute;
-            right: 10px;
-            top: 0;
             bottom: 0;
-            width: 5px;
-            background: linear-gradient(to bottom, black 50%, white 50%);
-            background-size: 5px 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 30px;
+            animation: flicker 0.1s infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .explosion {
+            position: absolute;
+            font-size: 60px;
+            animation: blast 0.8s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes blast {
+            0% { 
+                opacity: 1;
+                transform: scale(0.8);
+            }
+            100% { 
+                opacity: 0;
+                transform: scale(1.5);
+            }
+        }
+
+        .smoke {
+            position: absolute;
+            font-size: 40px;
+            animation: smoke-rise 1.2s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes smoke-rise {
+            0% { 
+                opacity: 1;
+                transform: translateY(0) translateX(0);
+            }
+            100% { 
+                opacity: 0;
+                transform: translateY(-80px) translateX(var(--tx, 0));
+            }
         }
 
         .btn-back {
@@ -247,12 +258,11 @@
     <div class="game-container">
         <a href="index.html" class="btn-back">⬅ Menu</a>
         
-        <div class="race-container">
-            <div id="opponent-hurdles"></div>
-            <div id="hurdles"></div>
-            <div id="player-runner" class="runner player-runner">🏃‍♂️</div>
-            <div id="opponent-runner" class="runner opponent-runner">🦆</div>
-            <div class="finish-line"></div>
+        <div class="rocket-container">
+            <div class="moon">🌙</div>
+            <div id="rocket" class="rocket">🚀</div>
+            <div id="rocket-flame" class="rocket-flame">🔥</div>
+            <div id="explosion-area"></div>
         </div>
         
         <div id="game-ui">
@@ -297,126 +307,84 @@
     let score = 0;
     let currentItem = {};
     let failures = 0;
-    let playerPosition = 0;
-    let opponentPosition = 0;
+    let rocketPosition = 0;
     let attempts = 0;
-    let opponentFailures = 0;
-    let lastChecked = 0;
-    let hurdles = [];
-    let opponentHurdles = [];
 
     function initGame() {
         sessionWords = [...rawWordBank.slice(0,20)].sort(() => Math.random() - 0.5);
         score = 0;
         failures = 0;
-        playerPosition = 0;
-        opponentPosition = 0;
+        rocketPosition = 0;
         attempts = 0;
-        opponentFailures = 0;
-        lastChecked = 0;
-        initHurdles();
-        updateRunners();
+        updateRocket();
         updateUI();
         nextWord();
     }
 
-    function initHurdles() {
-        const hurdlesContainer = document.getElementById('hurdles');
-        const opponentHurdlesContainer = document.getElementById('opponent-hurdles');
-        const raceContainer = document.querySelector('.race-container');
-        hurdlesContainer.innerHTML = '';
-        opponentHurdlesContainer.innerHTML = '';
-        hurdles = [];
-        opponentHurdles = [];
-        const numHurdles = 20;
-        const containerWidth = raceContainer.clientWidth - 40; // account for padding/margins
-        for (let i = 0; i < numHurdles; i++) {
-            // Player hurdles
-            const hurdle = document.createElement('div');
-            hurdle.className = 'hurdle';
-            hurdle.style.left = `${10 + (i * containerWidth / (numHurdles - 1))}px`;
-            hurdlesContainer.appendChild(hurdle);
-            hurdles.push(hurdle);
-
-            // Opponent hurdles
-            const oppHurdle = document.createElement('div');
-            oppHurdle.className = 'hurdle';
-            oppHurdle.style.left = `${10 + (i * containerWidth / (numHurdles - 1))}px`;
-            oppHurdle.style.bottom = '130px';
-            opponentHurdlesContainer.appendChild(oppHurdle);
-            opponentHurdles.push(oppHurdle);
-        }
-    }
-
-    function updateRunners() {
-        const container = document.querySelector('.race-container');
-        const width = container.offsetWidth - 60; // account for finish line
+    function updateRocket() {
+        const container = document.querySelector('.rocket-container');
+        const width = container.offsetWidth - 100;
         const maxPos = 20;
-        document.getElementById('player-runner').style.left = `${-10 + (playerPosition / maxPos) * width}px`;
-        document.getElementById('opponent-runner').style.left = `${-10 + (opponentPosition / maxPos) * width}px`;
+        document.getElementById('rocket').style.left = `${20 + (rocketPosition / maxPos) * width}px`;
     }
 
-    function knockHurdle() {
-        const index = (playerPosition - 1) % hurdles.length;
-        if (!hurdles[index].classList.contains('fallen')) {
-            hurdles[index].classList.add('fallen');
-        }
-    }
-
-    function knockOpponentHurdle() {
-        const index = (opponentPosition - 1) % opponentHurdles.length;
-        if (!opponentHurdles[index].classList.contains('fallen')) {
-            opponentHurdles[index].classList.add('fallen');
+    function showExplosion() {
+        const rocket = document.getElementById('rocket');
+        const explosionArea = document.getElementById('explosion-area');
+        const rocketRect = rocket.getBoundingClientRect();
+        const containerRect = document.querySelector('.rocket-container').getBoundingClientRect();
+        
+        // Blast effect
+        const blast = document.createElement('div');
+        blast.className = 'explosion';
+        blast.textContent = '💥';
+        blast.style.left = `${rocketRect.left - containerRect.left}px`;
+        blast.style.top = `${rocketRect.top - containerRect.top}px`;
+        explosionArea.appendChild(blast);
+        
+        // Multiple smoke puffs
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                const smoke = document.createElement('div');
+                smoke.className = 'smoke';
+                smoke.textContent = '💨';
+                smoke.style.left = `${rocketRect.left - containerRect.left + (Math.random() - 0.5) * 30}px`;
+                smoke.style.top = `${rocketRect.top - containerRect.top}px`;
+                smoke.style.setProperty('--tx', `${(Math.random() - 0.5) * 60}px`);
+                explosionArea.appendChild(smoke);
+            }, i * 100);
         }
     }
 
     function checkAnswer(choice) {
         const correctAnswer = currentItem.s;
         attempts++;
-        playerPosition = attempts;
         
-        if (playerPosition % 2 === 0 && playerPosition > lastChecked) {
-            lastChecked = playerPosition;
-            const playerPercent = failures / attempts;
-            const opponentPercent = opponentFailures / attempts;
-            if (playerPercent > opponentPercent) {
-                opponentFailures++;
-                knockOpponentHurdle();
-            }
-        }
-
         if (choice === correctAnswer) {
             score++;
-            const playerRunner = document.getElementById('player-runner');
-            playerRunner.classList.add('jumping');
-            setTimeout(() => playerRunner.classList.remove('jumping'), 500);
-            opponentPosition++;
-            document.getElementById('feedback').innerText = "MUITO BEM! ✨";
+            rocketPosition++;
+            document.getElementById('feedback').innerText = "MUITO BEM! 🚀";
             document.getElementById('feedback').style.color = "var(--success)";
-            updateRunners();
+            updateRocket();
             updateUI();
             
-            if (score >= 20) {
+            if (attempts >= 20) {
                 setTimeout(() => {
                     document.getElementById('game-ui').style.display = 'none';
-                    const victoryText = document.getElementById('victory-text');
-                    victoryText.innerText = `conseguiste ${score} palavras!`;
                     const medal = document.getElementById('medal');
-                    if (opponentPosition >= playerPosition) {
-                        medal.innerText = '🥈';
-                    } else {
-                        medal.innerText = '🥇';
-                    }
+                    const victoryText = document.getElementById('victory-text');
                     const ranking = document.getElementById('ranking');
-                    const playerSuccessful = score;
-                    const npcSuccessful = opponentPosition - opponentFailures;
-                    if (playerSuccessful > npcSuccessful) {
-                        ranking.innerHTML = `1º: Jogador com ${playerSuccessful} hurdles<br>2º: Pato com ${npcSuccessful} hurdles`;
-                    } else if (npcSuccessful > playerSuccessful) {
-                        ranking.innerHTML = `1º: Pato com ${npcSuccessful} hurdles<br>2º: Jogador com ${playerSuccessful} hurdles`;
+                    
+                    if (score >= 18) {
+                        medal.innerText = '🌙';
+                        victoryText.innerText = `Parabéns! Chegaste à lua com ${score} de 20 palavras!`;
+                        ranking.innerHTML = `Foguete decolou com sucesso!`;
                     } else {
-                        ranking.innerHTML = `Empate: Ambos com ${playerSuccessful} hurdles`;
+                        medal.innerText = '🌍';
+                        victoryText.innerText = `Quase! Desceste na Terra com ${score} de 20 palavras.`;
+                        ranking.innerHTML = `Treina mais para chegar à lua!`;
                     }
+                    
                     document.getElementById('victory-screen').style.display = 'flex';
                 }, 1000);
             } else {
@@ -424,15 +392,32 @@
             }
         } else {
             failures++;
-            const failureRate = failures / attempts;
-            if (Math.random() < failureRate) {
-                opponentPosition++;
-            }
-            knockHurdle();
-            updateRunners();
-            updateUI();
+            showExplosion();
             document.getElementById('feedback').innerText = `Errado! Tenta outra vez.`;
             document.getElementById('feedback').style.color = "var(--error)";
+            
+            if (attempts >= 20) {
+                setTimeout(() => {
+                    document.getElementById('game-ui').style.display = 'none';
+                    const medal = document.getElementById('medal');
+                    const victoryText = document.getElementById('victory-text');
+                    const ranking = document.getElementById('ranking');
+                    
+                    if (score >= 18) {
+                        medal.innerText = '🌙';
+                        victoryText.innerText = `Parabéns! Chegaste à lua com ${score} de 20 palavras!`;
+                        ranking.innerHTML = `Foguete decolou com sucesso!`;
+                    } else {
+                        medal.innerText = '🌍';
+                        victoryText.innerText = `Quase! Desceste na Terra com ${score} de 20 palavras.`;
+                        ranking.innerHTML = `Treina mais para chegar à lua!`;
+                    }
+                    
+                    document.getElementById('victory-screen').style.display = 'flex';
+                }, 1000);
+            } else {
+                setTimeout(nextWord, 800);
+            }
         }
     }
 
@@ -448,11 +433,9 @@
     }
 
     function updateUI() {
-        document.getElementById('counter').innerText = `Estrelas: ${score} / 20`;
+        document.getElementById('counter').innerText = `Palavras: ${score} / 20`;
         document.getElementById('progress-bar').style.width = (score / 20 * 100) + "%";
-        const playerSuccessful = score;
-        const npcSuccessful = opponentPosition - opponentFailures;
-        document.getElementById('scores').innerText = `Jogador: ${playerSuccessful} | Pato: ${npcSuccessful}`;
+        document.getElementById('scores').innerText = `Progresso: ${score} / 20`;
     }
 
     function playHelp() {
