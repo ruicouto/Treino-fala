@@ -15,7 +15,8 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
+            background: var(--bg) url('img/background.jpg') no-repeat center;
+            background-size: 150% auto;
             margin: 0;
             display: flex;
             align-items: center;
@@ -26,7 +27,7 @@
         .game-container {
             background: white;
             border-radius: 40px;
-            padding: 30px;
+            padding: 70px 30px 30px;
             width: 90%;
             max-width: 800px;
             text-align: center;
@@ -504,7 +505,7 @@
         document.getElementById('progress-bar').style.width = (score / 20 * 100) + "%";
         const playerSuccessful = score;
         const npcSuccessful = opponentPosition - opponentFailures;
-        document.getElementById('scores').innerText = `Player: ${playerSuccessful}/20 | NPC: ${npcSuccessful}/20`;
+        document.getElementById('scores').innerText = `Jogador: ${playerSuccessful} | Pato: ${npcSuccessful}`;
     }
 
     function playHelp() {
